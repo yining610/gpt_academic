@@ -1,5 +1,5 @@
 from toolbox import update_ui
-from toolbox import CatchException, report_execption
+from toolbox import CatchException, report_exception
 from toolbox import write_history_to_file, promote_file_to_downloadzone
 fast_debug = True
 
@@ -12,13 +12,6 @@ class PaperFileGroup():
         self.sp_file_index = []
         self.sp_file_tag = []
 
-        # count_token
-        from request_llm.bridge_all import model_info
-        enc = model_info["gpt-3.5-turbo"]['tokenizer']
-        def get_token_num(txt): return len(
-            enc.encode(txt, disallowed_special=()))
-        self.get_token_num = get_token_num
-
     def run_file_split(self, max_token_limit=1900):
         """
         将长文本分离开来
@@ -29,9 +22,8 @@ class PaperFileGroup():
                 self.sp_file_index.append(index)
                 self.sp_file_tag.append(self.file_paths[index])
             else:
-                from .crazy_utils import breakdown_txt_to_satisfy_token_limit_for_pdf
-                segments = breakdown_txt_to_satisfy_token_limit_for_pdf(
-                    file_content, self.get_token_num, max_token_limit)
+                from crazy_functions.pdf_fns.breakdown_txt import breakdown_text_to_satisfy_token_limit
+                segments = breakdown_text_to_satisfy_token_limit(file_content, max_token_limit)
                 for j, segment in enumerate(segments):
                     self.sp_file_contents.append(segment)
                     self.sp_file_index.append(index)
@@ -131,7 +123,7 @@ def 解析ipynb文件(txt, llm_kwargs, plugin_kwargs, chatbot, history, system_p
     else:
         if txt == "":
             txt = '空空如也的输入栏'
-        report_execption(chatbot, history,
+        report_exception(chatbot, history,
                          a=f"解析项目: {txt}", b=f"找不到本地项目或无权访问: {txt}")
         yield from update_ui(chatbot=chatbot, history=history)  # 刷新界面
         return
@@ -141,7 +133,7 @@ def 解析ipynb文件(txt, llm_kwargs, plugin_kwargs, chatbot, history, system_p
         file_manifest = [f for f in glob.glob(
             f'{project_folder}/**/*.ipynb', recursive=True)]
     if len(file_manifest) == 0:
-        report_execption(chatbot, history,
+        report_exception(chatbot, history,
                          a=f"解析项目: {txt}", b=f"找不到任何.ipynb文件: {txt}")
         yield from update_ui(chatbot=chatbot, history=history)  # 刷新界面
         return

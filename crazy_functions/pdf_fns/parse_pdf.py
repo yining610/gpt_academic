@@ -14,7 +14,7 @@ import math
 class GROBID_OFFLINE_EXCEPTION(Exception): pass
 
 def get_avail_grobid_url():
-    GROBID_URLS, = get_conf('GROBID_URLS')
+    GROBID_URLS = get_conf('GROBID_URLS')
     if len(GROBID_URLS) == 0: return None
     try:
         _grobid_url = random.choice(GROBID_URLS) # 随机负载均衡
@@ -73,8 +73,8 @@ def produce_report_markdown(gpt_response_collection, meta, paper_meta_info, chat
     return res_path
 
 def translate_pdf(article_dict, llm_kwargs, chatbot, fp, generated_conclusion_files, TOKEN_LIMIT_PER_FRAGMENT, DST_LANG):
-    from crazy_functions.crazy_utils import construct_html
-    from crazy_functions.crazy_utils import breakdown_txt_to_satisfy_token_limit_for_pdf
+    from crazy_functions.pdf_fns.report_gen_html import construct_html
+    from crazy_functions.pdf_fns.breakdown_txt import breakdown_text_to_satisfy_token_limit
     from crazy_functions.crazy_utils import request_gpt_model_in_new_thread_with_ui_alive
     from crazy_functions.crazy_utils import request_gpt_model_multi_threads_with_very_awesome_ui_and_high_efficiency
 
@@ -82,7 +82,7 @@ def translate_pdf(article_dict, llm_kwargs, chatbot, fp, generated_conclusion_fi
     # title
     title = article_dict.get('title', '无法获取 title'); prompt += f'title:{title}\n\n'
     # authors
-    authors = article_dict.get('authors', '无法获取 authors'); prompt += f'authors:{authors}\n\n'
+    authors = article_dict.get('authors', '无法获取 authors')[:100]; prompt += f'authors:{authors}\n\n'
     # abstract
     abstract = article_dict.get('abstract', '无法获取 abstract'); prompt += f'abstract:{abstract}\n\n'
     # command
@@ -103,7 +103,7 @@ def translate_pdf(article_dict, llm_kwargs, chatbot, fp, generated_conclusion_fi
     inputs_show_user_array = []
 
     # get_token_num
-    from request_llm.bridge_all import model_info
+    from request_llms.bridge_all import model_info
     enc = model_info[llm_kwargs['llm_model']]['tokenizer']
     def get_token_num(txt): return len(enc.encode(txt, disallowed_special=()))
 
@@ -116,7 +116,7 @@ def translate_pdf(article_dict, llm_kwargs, chatbot, fp, generated_conclusion_fi
             # find a smooth token limit to achieve even seperation
             count = int(math.ceil(raw_token_num / TOKEN_LIMIT_PER_FRAGMENT))
             token_limit_smooth = raw_token_num // count + count
-            return breakdown_txt_to_satisfy_token_limit_for_pdf(txt, get_token_fn=get_token_num, limit=token_limit_smooth)
+            return breakdown_text_to_satisfy_token_limit(txt, limit=token_limit_smooth, llm_model=llm_kwargs['llm_model'])
 
     for section in article_dict.get('sections'):
         if len(section['text']) == 0: continue

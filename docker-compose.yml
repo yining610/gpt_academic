@@ -129,7 +129,7 @@ services:
     runtime: nvidia
     devices:
       - /dev/nvidia0:/dev/nvidia0
-      
+
     # 与宿主的网络融合
     network_mode: "host"
     command: >
@@ -137,7 +137,7 @@ services:
 
     # P.S. 通过对 command 进行微调，可以便捷地安装额外的依赖
     # command: >
-    #   bash -c "pip install -r request_llm/requirements_qwen.txt && python3 -u main.py"
+    #   bash -c "pip install -r request_llms/requirements_qwen.txt && python3 -u main.py"
 
 ### ===================================================
 ### 【方案三】 如果需要运行ChatGPT + LLAMA + 盘古 + RWKV本地模型
@@ -163,7 +163,7 @@ services:
     runtime: nvidia
     devices:
       - /dev/nvidia0:/dev/nvidia0
-      
+
     # 与宿主的网络融合
     network_mode: "host"
 
@@ -229,4 +229,3 @@ services:
     # 不使用代理网络拉取最新代码
     command: >
       bash -c "python3 -u main.py"
-

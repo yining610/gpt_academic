@@ -3,8 +3,6 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-config.py
-
 # C extensions
 *.so
 
@@ -148,12 +146,10 @@ debug*
 private*
 crazy_functions/test_project/pdf_and_word
 crazy_functions/test_samples
-request_llm/jittorllms
+request_llms/jittorllms
 multi-language
-request_llm/moss
+request_llms/moss
 media
 flagged
-request_llm/ChatGLM-6b-onnx-u8s8
-config.py
-config.py
-config.py
+request_llms/ChatGLM-6b-onnx-u8s8
+.pre-commit-config.yaml
