@@ -2,6 +2,76 @@
 //  第 1 部分: 工具函数
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
+function push_data_to_gradio_component(DAT, ELEM_ID, TYPE) {
+    // type,               // type==="str" / type==="float"
+    if (TYPE == "str") {
+        // convert dat to string: do nothing
+    }
+    else if (TYPE == "no_conversion") {
+        // no nothing
+    }
+    else if (TYPE == "float") {
+        // convert dat to float
+        DAT = parseFloat(DAT);
+    }
+    const myEvent = new CustomEvent('gpt_academic_update_gradio_component', {
+        detail: {
+            data: DAT,
+            elem_id: ELEM_ID,
+        }
+    });
+    window.dispatchEvent(myEvent);
+}
+
+
+async function get_gradio_component(ELEM_ID) {
+    function waitFor(ELEM_ID) {
+        return new Promise((resolve) => {
+            const myEvent = new CustomEvent('gpt_academic_get_gradio_component_value', {
+                detail: {
+                    elem_id: ELEM_ID,
+                    resolve,
+                }
+            });
+            window.dispatchEvent(myEvent);
+        });
+    }
+    result = await waitFor(ELEM_ID);
+    return result;
+}
+
+
+async function get_data_from_gradio_component(ELEM_ID) {
+    let comp = await get_gradio_component(ELEM_ID);
+    return comp.props.value;
+}
+
+
+function update_array(arr, item, mode) {
+    //   // Remove "输入清除键"
+    //   p = updateArray(p, "输入清除键", "remove");
+    //   console.log(p); // Should log: ["基础功能区", "函数插件区"]
+
+    //   // Add "输入清除键"
+    //   p = updateArray(p, "输入清除键", "add");
+    //   console.log(p); // Should log: ["基础功能区", "函数插件区", "输入清除键"]
+
+    const index = arr.indexOf(item);
+    if (mode === "remove") {
+        if (index !== -1) {
+            // Item found, remove it
+            arr.splice(index, 1);
+        }
+    } else if (mode === "add") {
+        if (index === -1) {
+            // Item not found, add it
+            arr.push(item);
+        }
+    }
+    return arr;
+}
+
+
 function gradioApp() {
     // https://github.com/GaiZhenbiao/ChuanhuChatGPT/tree/main/web_assets/javascript
     const elems = document.getElementsByTagName('gradio-app');
@@ -14,6 +84,7 @@ function gradioApp() {
     return elem.shadowRoot ? elem.shadowRoot : elem;
 }
 
+
 function setCookie(name, value, days) {
     var expires = "";
 
@@ -25,6 +96,7 @@ function setCookie(name, value, days) {
 
     document.cookie = name + "=" + value + expires + "; path=/";
 }
+
 
 function getCookie(name) {
     var decodedCookie = decodeURIComponent(document.cookie);
@@ -40,6 +112,7 @@ function getCookie(name) {
 
     return null;
 }
+
 
 let toastCount = 0;
 function toast_push(msg, duration) {
@@ -63,6 +136,7 @@ function toast_push(msg, duration) {
     toastCount++;
 }
 
+
 function toast_up(msg) {
     var m = document.getElementById('toast_up');
     if (m) {
@@ -75,12 +149,14 @@ function toast_up(msg) {
     document.body.appendChild(m);
 }
 
+
 function toast_down() {
     var m = document.getElementById('toast_up');
     if (m) {
         document.body.removeChild(m); // remove the loader from the body
     }
 }
+
 
 function begin_loading_status() {
     // Create the loader div and add styling
@@ -234,7 +310,7 @@ let timeoutID = null;
 let lastInvocationTime = 0;
 let lastArgs = null;
 function do_something_but_not_too_frequently(min_interval, func) {
-    return function(...args) {
+    return function (...args) {
         lastArgs = args;
         const now = Date.now();
         if (!lastInvocationTime || (now - lastInvocationTime) >= min_interval) {
@@ -242,19 +318,20 @@ function do_something_but_not_too_frequently(min_interval, func) {
             // 现在就执行
             setTimeout(() => {
                 func.apply(this, lastArgs);
-            }, 0);   
+            }, 0);
         } else if (!timeoutID) {
             // 等一会执行
             timeoutID = setTimeout(() => {
                 timeoutID = null;
                 lastInvocationTime = Date.now();
                 func.apply(this, lastArgs);
-            }, min_interval - (now - lastInvocationTime));      
+            }, min_interval - (now - lastInvocationTime));
         } else {
             // 压根不执行
         }
     }
 }
+
 
 function chatbotContentChanged(attempt = 1, force = false) {
     // https://github.com/GaiZhenbiao/ChuanhuChatGPT/tree/main/web_assets/javascript
@@ -263,13 +340,8 @@ function chatbotContentChanged(attempt = 1, force = false) {
             gradioApp().querySelectorAll('#gpt-chatbot .message-wrap .message.bot').forEach(addCopyButton);
         }, i === 0 ? 0 : 200);
     }
+    // we have moved mermaid-related code to gradio-fix repository: binary-husky/gradio-fix@32150d0
 
-    const run_mermaid_render = do_something_but_not_too_frequently(1000, function () {
-        const blocks = document.querySelectorAll(`pre.mermaid, diagram-div`);
-        if (blocks.length == 0) { return; }
-        uml("mermaid");
-    });
-    run_mermaid_render();
 }
 
 
@@ -277,7 +349,6 @@ function chatbotContentChanged(attempt = 1, force = false) {
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 //  第 3 部分: chatbot动态高度调整
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-
 function chatbotAutoHeight() {
     // 自动调整高度：立即
     function update_height() {
@@ -309,6 +380,7 @@ function chatbotAutoHeight() {
     setInterval(function () { update_height_slow() }, 50); // 每50毫秒执行一次
 }
 
+
 swapped = false;
 function swap_input_area() {
     // Get the elements to be swapped
@@ -327,6 +399,7 @@ function swap_input_area() {
     if (swapped) { swapped = false; }
     else { swapped = true; }
 }
+
 
 function get_elements(consider_state_panel = false) {
     var chatbot = document.querySelector('#gpt-chatbot > div.wrap.svelte-18telvq');
@@ -349,7 +422,7 @@ function get_elements(consider_state_panel = false) {
     var chatbot_height = chatbot.style.height;
     // 交换输入区位置，使得输入区始终可用
     if (!swapped) {
-        if (panel1.top != 0 && (panel1.bottom + panel1.top) / 2 < 0) { swap_input_area(); }
+        if (panel1.top != 0 && (0.9 * panel1.bottom + 0.1 * panel1.top) < 0) { swap_input_area(); }
     }
     else if (swapped) {
         if (panel2.top != 0 && panel2.top > 0) { swap_input_area(); }
@@ -425,6 +498,7 @@ async function upload_files(files) {
     }
 }
 
+
 function register_func_paste(input) {
     let paste_files = [];
     if (input) {
@@ -450,6 +524,7 @@ function register_func_paste(input) {
         });
     }
 }
+
 
 function register_func_drag(elem) {
     if (elem) {
@@ -487,6 +562,7 @@ function register_func_drag(elem) {
     }
 }
 
+
 function elem_upload_component_pop_message(elem) {
     if (elem) {
         const dragEvents = ["dragover"];
@@ -516,6 +592,7 @@ function elem_upload_component_pop_message(elem) {
     }
 }
 
+
 function register_upload_event() {
     locate_upload_elems();
     if (elem_upload_float) {
@@ -537,6 +614,7 @@ function register_upload_event() {
         toast_push("oppps", 3000);
     }
 }
+
 
 function monitoring_input_box() {
     register_upload_event();
@@ -571,7 +649,6 @@ window.addEventListener("DOMContentLoaded", function () {
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 //  第 5 部分: 音频按钮样式变化
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-
 function audio_fn_init() {
     let audio_component = document.getElementById('elem_audio');
     if (audio_component) {
@@ -607,6 +684,7 @@ function audio_fn_init() {
 
     }
 }
+
 
 function minor_ui_adjustment() {
     let cbsc_area = document.getElementById('cbsc');
@@ -672,9 +750,9 @@ function limit_scroll_position() {
     let scrollableDiv = document.querySelector('#gpt-chatbot > div.wrap');
     scrollableDiv.addEventListener('wheel', function (e) {
         let preventScroll = false;
-        if (e.deltaX != 0) { prevented_offset = 0; return;}
-        if (this.scrollHeight == this.clientHeight) { prevented_offset = 0; return;}
-        if (e.deltaY < 0) { prevented_offset = 0; return;}
+        if (e.deltaX != 0) { prevented_offset = 0; return; }
+        if (this.scrollHeight == this.clientHeight) { prevented_offset = 0; return; }
+        if (e.deltaY < 0) { prevented_offset = 0; return; }
         if (e.deltaY > 0 && this.scrollHeight - this.clientHeight - this.scrollTop <= 1) { preventScroll = true; }
 
         if (preventScroll) {
@@ -700,7 +778,88 @@ function limit_scroll_position() {
 //  第 7 部分: JS初始化函数
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
-function GptAcademicJavaScriptInit(LAYOUT = "LEFT-RIGHT") {
+function loadLive2D() {
+    try {
+        $("<link>").attr({ href: "file=themes/waifu_plugin/waifu.css", rel: "stylesheet", type: "text/css" }).appendTo('head');
+        $('body').append('<div class="waifu"><div class="waifu-tips"></div><canvas id="live2d" class="live2d"></canvas><div class="waifu-tool"><span class="fui-home"></span> <span class="fui-chat"></span> <span class="fui-eye"></span> <span class="fui-user"></span> <span class="fui-photo"></span> <span class="fui-info-circle"></span> <span class="fui-cross"></span></div></div>');
+        $.ajax({
+            url: "file=themes/waifu_plugin/waifu-tips.js", dataType: "script", cache: true, success: function () {
+                $.ajax({
+                    url: "file=themes/waifu_plugin/live2d.js", dataType: "script", cache: true, success: function () {
+                        /* 可直接修改部分参数 */
+                        live2d_settings['hitokotoAPI'] = "hitokoto.cn";  // 一言 API
+                        live2d_settings['modelId'] = 3;                  // 默认模型 ID
+                        live2d_settings['modelTexturesId'] = 44;          // 默认材质 ID
+                        live2d_settings['modelStorage'] = false;         // 不储存模型 ID
+                        live2d_settings['waifuSize'] = '210x187';
+                        live2d_settings['waifuTipsSize'] = '187x52';
+                        live2d_settings['canSwitchModel'] = true;
+                        live2d_settings['canSwitchTextures'] = true;
+                        live2d_settings['canSwitchHitokoto'] = false;
+                        live2d_settings['canTakeScreenshot'] = false;
+                        live2d_settings['canTurnToHomePage'] = false;
+                        live2d_settings['canTurnToAboutPage'] = false;
+                        live2d_settings['showHitokoto'] = false;          // 显示一言
+                        live2d_settings['showF12Status'] = false;         // 显示加载状态
+                        live2d_settings['showF12Message'] = false;        // 显示看板娘消息
+                        live2d_settings['showF12OpenMsg'] = false;        // 显示控制台打开提示
+                        live2d_settings['showCopyMessage'] = false;       // 显示 复制内容 提示
+                        live2d_settings['showWelcomeMessage'] = true;     // 显示进入面页欢迎词
+                        /* 在 initModel 前添加 */
+                        initModel("file=themes/waifu_plugin/waifu-tips.json");
+                    }
+                });
+            }
+        });
+    } catch (err) { console.log("[Error] JQuery is not defined.") }
+}
+
+
+function get_checkbox_selected_items(elem_id) {
+    display_panel_arr = [];
+    document.getElementById(elem_id).querySelector('[data-testid="checkbox-group"]').querySelectorAll('label').forEach(label => {
+        // Get the span text
+        const spanText = label.querySelector('span').textContent;
+        // Get the input value
+        const checked = label.querySelector('input').checked;
+        if (checked) {
+            display_panel_arr.push(spanText)
+        }
+    });
+    return display_panel_arr;
+}
+
+
+function gpt_academic_gradio_saveload(
+    save_or_load,       // save_or_load==="save" / save_or_load==="load"
+    elem_id,            // element id
+    cookie_key,         // cookie key
+    save_value = "",      // save value
+    load_type = "str",  // type==="str" / type==="float"
+    load_default = false, // load default value
+    load_default_value = ""
+) {
+    if (save_or_load === "load") {
+        let value = getCookie(cookie_key);
+        if (value) {
+            console.log('加载cookie', elem_id, value)
+            push_data_to_gradio_component(value, elem_id, load_type);
+        }
+        else {
+            if (load_default) {
+                console.log('加载cookie的默认值', elem_id, load_default_value)
+                push_data_to_gradio_component(load_default_value, elem_id, load_type);
+            }
+        }
+    }
+    if (save_or_load === "save") {
+        setCookie(cookie_key, save_value, 365);
+    }
+}
+
+
+async function GptAcademicJavaScriptInit(dark, prompt, live2d, layout) {
+    // 第一部分，布局初始化
     audio_fn_init();
     minor_ui_adjustment();
     chatbotIndicator = gradioApp().querySelector('#gpt-chatbot > div.wrap');
@@ -708,8 +867,90 @@ function GptAcademicJavaScriptInit(LAYOUT = "LEFT-RIGHT") {
         chatbotContentChanged(1);
     });
     chatbotObserver.observe(chatbotIndicator, { attributes: true, childList: true, subtree: true });
-    if (LAYOUT === "LEFT-RIGHT") { chatbotAutoHeight(); }
-    if (LAYOUT === "LEFT-RIGHT") { limit_scroll_position(); }
-    // setInterval(function () { uml("mermaid") }, 5000); // 每50毫秒执行一次
+    if (layout === "LEFT-RIGHT") { chatbotAutoHeight(); }
+    if (layout === "LEFT-RIGHT") { limit_scroll_position(); }
+
+    // 第二部分，读取Cookie，初始话界面
+    let searchString = "";
+    let bool_value = "";
+
+    //  darkmode 深色模式
+    if (getCookie("js_darkmode_cookie")) {
+        dark = getCookie("js_darkmode_cookie")
+    }
+    dark = dark == "True";
+    if (document.querySelectorAll('.dark').length) {
+        if (!dark) {
+            document.querySelectorAll('.dark').forEach(el => el.classList.remove('dark'));
+        }
+    } else {
+        if (dark) {
+            document.querySelector('body').classList.add('dark');
+        }
+    }
+
+    // SysPrompt 系统静默提示词
+    gpt_academic_gradio_saveload("load", "elem_prompt", "js_system_prompt_cookie", null, "str");
+
+    // Temperature 大模型温度参数
+    gpt_academic_gradio_saveload("load", "elem_temperature", "js_temperature_cookie", null, "float");
+
+    // clearButton 自动清除按钮
+    if (getCookie("js_clearbtn_show_cookie")) {
+        // have cookie
+        bool_value = getCookie("js_clearbtn_show_cookie")
+        bool_value = bool_value == "True";
+        searchString = "输入清除键";
+
+        if (bool_value) {
+            // make btns appear
+            let clearButton = document.getElementById("elem_clear"); clearButton.style.display = "block";
+            let clearButton2 = document.getElementById("elem_clear2"); clearButton2.style.display = "block";
+            // deal with checkboxes
+            let arr_with_clear_btn = update_array(
+                await get_data_from_gradio_component('cbs'), "输入清除键", "add"
+            )
+            push_data_to_gradio_component(arr_with_clear_btn, "cbs", "no_conversion");
+        } else {
+            // make btns disappear
+            let clearButton = document.getElementById("elem_clear"); clearButton.style.display = "none";
+            let clearButton2 = document.getElementById("elem_clear2"); clearButton2.style.display = "none";
+            // deal with checkboxes
+            let arr_without_clear_btn = update_array(
+                await get_data_from_gradio_component('cbs'), "输入清除键", "remove"
+            )
+            push_data_to_gradio_component(arr_without_clear_btn, "cbs", "no_conversion");
+        }
+    }
+
+    // live2d 显示
+    if (getCookie("js_live2d_show_cookie")) {
+        // have cookie
+        searchString = "添加Live2D形象";
+        bool_value = getCookie("js_live2d_show_cookie");
+        bool_value = bool_value == "True";
+        if (bool_value) {
+            loadLive2D();
+            let arr_with_live2d = update_array(
+                await get_data_from_gradio_component('cbsc'), "添加Live2D形象", "add"
+            )
+            push_data_to_gradio_component(arr_with_live2d, "cbsc", "no_conversion");
+        } else {
+            try {
+                $('.waifu').hide();
+                let arr_without_live2d = update_array(
+                    await get_data_from_gradio_component('cbsc'), "添加Live2D形象", "remove"
+                )
+                push_data_to_gradio_component(arr_without_live2d, "cbsc", "no_conversion");
+            } catch (error) {
+            }
+        }
+    } else {
+        // do not have cookie
+        if (live2d) {
+            loadLive2D();
+        } else {
+        }
+    }
 
 }

@@ -9,7 +9,8 @@ def validate_key():
     if YUNQUE_SECRET_KEY == '': return False
     return True
 
-def predict_no_ui_long_connection(inputs, llm_kwargs, history=[], sys_prompt="", observe_window=[], console_slience=False):
+def predict_no_ui_long_connection(inputs:str, llm_kwargs:dict, history:list=[], sys_prompt:str="",
+                                  observe_window:list=[], console_slience:bool=False):
     """
         ⭐ 多线程方法
         函数的说明请见 request_llms/bridge_all.py
@@ -56,6 +57,7 @@ def predict(inputs, llm_kwargs, plugin_kwargs, chatbot, history=[], system_promp
     # 开始接收回复
     from .com_skylark2api import YUNQUERequestInstance
     sri = YUNQUERequestInstance()
+    response = f"[Local Message] 等待{model_name}响应中 ..."
     for response in sri.generate(inputs, llm_kwargs, history, system_prompt):
         chatbot[-1] = (inputs, response)
         yield from update_ui(chatbot=chatbot, history=history)
