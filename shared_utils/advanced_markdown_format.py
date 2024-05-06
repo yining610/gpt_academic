@@ -207,6 +207,53 @@ def fix_code_segment_indent(txt):
         return txt
 
 
+def markdown_convertion_for_file(txt):
+    """
+    将Markdown格式的文本转换为HTML格式。如果包含数学公式，则先将公式转换为HTML格式。
+    """
+    from themes.theme import advanced_css
+    pre = f"""
+    <!DOCTYPE html><head><meta charset="utf-8"><title>对话历史</title><style>{advanced_css}</style></head>
+    <body>
+    <div class="test_temp1" style="width:10%; height: 500px; float:left;"></div>
+    <div class="test_temp2" style="width:80%;padding: 40px;float:left;padding-left: 20px;padding-right: 20px;box-shadow: rgba(0, 0, 0, 0.2) 0px 0px 8px 8px;border-radius: 10px;">
+        <div class="markdown-body">
+    """
+    suf = """
+        </div>
+    </div>
+    <div class="test_temp3" style="width:10%; height: 500px; float:left;"></div>
+    </body>
+    """
+
+    if txt.startswith(pre) and txt.endswith(suf):
+        # print('警告，输入了已经经过转化的字符串，二次转化可能出问题')
+        return txt  # 已经被转化过，不需要再次转化
+
+    find_equation_pattern = r'<script type="math/tex(?:.*?)>(.*?)</script>'
+    txt = fix_markdown_indent(txt)
+    # convert everything to html format
+    split = markdown.markdown(text="---")
+    convert_stage_1 = markdown.markdown(
+        text=txt,
+        extensions=[
+            "sane_lists",
+            "tables",
+            "mdx_math",
+            "pymdownx.superfences",
+            "pymdownx.highlight",
+        ],
+        extension_configs={**markdown_extension_configs, **code_highlight_configs},
+    )
+    convert_stage_1 = markdown_bug_hunt(convert_stage_1)
+
+    # 2. convert to rendered equation
+    convert_stage_2_2, n = re.subn(
+        find_equation_pattern, replace_math_render, convert_stage_1, flags=re.DOTALL
+    )
+    # cat them together
+    return pre + convert_stage_2_2 + suf
+
 @lru_cache(maxsize=128)  # 使用 lru缓存 加快转换速度
 def markdown_convertion(txt):
     """

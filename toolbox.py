@@ -192,6 +192,8 @@ def trimmed_format_exc():
     replace_path = "."
     return str.replace(current_path, replace_path)
 
+def trimmed_format_exc_markdown():
+    return '\n\n```\n' + trimmed_format_exc() + '```'
 
 def CatchException(f):
     """
@@ -536,6 +538,17 @@ def on_file_uploaded(
     return chatbot, txt, txt2, cookies
 
 
+def generate_file_link(report_files:List[str]):
+    file_links = ""
+    for f in report_files:
+        file_links += (
+            f'<br/><a href="file={os.path.abspath(f)}" target="_blank">{f}</a>'
+        )
+    return file_links
+
+
+
+
 def on_report_generated(cookies:dict, files:List[str], chatbot:ChatBotWithCookies):
     if "files_to_promote" in cookies:
         report_files = cookies["files_to_promote"]
@@ -866,23 +879,6 @@ class ProxyNetworkActivate:
         if "HTTPS_PROXY" in os.environ:
             os.environ.pop("HTTPS_PROXY")
         return
-
-
-def objdump(obj, file="objdump.tmp"):
-    import pickle
-
-    with open(file, "wb+") as f:
-        pickle.dump(obj, f)
-    return
-
-
-def objload(file="objdump.tmp"):
-    import pickle, os
-
-    if not os.path.exists(file):
-        return
-    with open(file, "rb") as f:
-        return pickle.load(f)
 
 
 def Singleton(cls):

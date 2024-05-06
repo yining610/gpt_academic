@@ -1,6 +1,7 @@
 > [!IMPORTANT]
+> 2024.5.1: 加入Doc2x翻译PDF论文的功能，[查看详情](https://github.com/binary-husky/gpt_academic/wiki/Doc2x)  
+> 2024.4.30: 3.75版本引入Edge-TTS和SoVits语音克隆模块，[查看详情](https://www.bilibili.com/video/BV1Rp421S7tF/)  
 > 2024.3.11: 恭迎Claude3和Moonshot，全力支持Qwen、GLM、DeepseekCoder等中文大语言模型！  
-> 2024.1.18: 更新3.70版本，支持Mermaid绘图库（让大模型绘制脑图）  
 > 2024.1.17: 安装依赖时，请选择`requirements.txt`中**指定的版本**。 安装命令：`pip install -r requirements.txt`。本项目完全开源免费，您可通过订阅[在线服务](https://github.com/binary-husky/gpt_academic/wiki/online)的方式鼓励本项目的发展。
 
 <br>
@@ -84,6 +85,10 @@ Latex论文一键校对 | [插件] 仿Grammarly对Latex文章进行语法、拼�
 - 新界面（修改`config.py`中的LAYOUT选项即可实现“左右布局”和“上下布局”的切换）
 <div align="center">
 <img src="https://user-images.githubusercontent.com/96192199/279702205-d81137c3-affd-4cd1-bb5e-b15610389762.gif" width="700" >
+</div>
+
+<div align="center">
+<img src="https://github.com/binary-husky/gpt_academic/assets/96192199/70ff1ec5-e589-4561-a29e-b831079b37fb.gif" width="700" >
 </div>
 
 
